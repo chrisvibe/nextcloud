@@ -132,6 +132,17 @@ docker exec -u www-data nextcloud php occ user:resetpassword admin
 
 - **80**: HTTP (accessed via Cloudflare Tunnel in self-hosting mode)
 
+## PostgreSQL 15+ Permission Fix
+
+PostgreSQL 15 and later changed default schema permissions. To fix this, we use an init script:
+
+**initdb.d/init-permissions.sql:**
+```sql
+ALTER SCHEMA public OWNER TO nextcloud;
+```
+
+This script runs automatically when the database is first created.
+
 ## Links
 
 - [Nextcloud Documentation](https://docs.nextcloud.com/)

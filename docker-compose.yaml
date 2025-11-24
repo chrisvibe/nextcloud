@@ -1,21 +1,21 @@
 services:
-  nextcloud-db:
-    image: postgres:16-alpine
+  db:
+    image: postgres:18-alpine
     container_name: nextcloud-db
     restart: unless-stopped
     volumes:
-      - nextcloud_db:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-nextcloud}
-      - POSTGRES_USER=${POSTGRES_USER:-nextcloud}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - db_data:/var/lib/postgresql/data
+      - ./initdb.d:/docker-entrypoint-initdb.d:ro
+    env_file:
+      - .env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nextcloud}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
-  nextcloud-redis:
+  redis:
     image: redis:alpine
     container_name: nextcloud-redis
     restart: unless-stopped
@@ -30,27 +30,15 @@ services:
     container_name: nextcloud
     restart: unless-stopped
     depends_on:
-      nextcloud-db:
+      db:
         condition: service_healthy
-      nextcloud-redis:
+      redis:
         condition: service_healthy
     volumes:
-      - nextcloud_app:/var/www/html
+      - app_data:/var/www/html
       - ${NEXTCLOUD_DATA}:/var/www/html/data
-    ports:
-      - "8090:80"
-    environment:
-      - POSTGRES_HOST=nextcloud-db
-      - POSTGRES_DB=${POSTGRES_DB:-nextcloud}
-      - POSTGRES_USER=${POSTGRES_USER:-nextcloud}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - REDIS_HOST=nextcloud-redis
-      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER:-admin}
-      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}
-      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_DOMAIN}
-      - TRUSTED_PROXIES=${NEXTCLOUD_TRUSTED_PROXIES}
-      - OVERWRITEPROTOCOL=https
-      - OVERWRITEHOST=${NEXTCLOUD_DOMAIN}
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/status.php"]
       interval: 30s
@@ -59,7 +47,7 @@ services:
       start_period: 60s
 
 volumes:
-  nextcloud_db:
+  db_data:
     name: nextcloud_db
-  nextcloud_app:
+  app_data:
     name: nextcloud_app

@@ -1,11 +1,23 @@
 # Nextcloud Configuration
 NEXTCLOUD_DOMAIN=nextcloud.yourdomain.com
 
-# Admin credentials
-NEXTCLOUD_ADMIN_USER=admin
-NEXTCLOUD_ADMIN_PASSWORD='changeme_secure_password' # fex openssl rand -base64 32
-
 # Database credentials
 POSTGRES_DB=nextcloud
 POSTGRES_USER=nextcloud
 POSTGRES_PASSWORD='changeme_db_password' # fex openssl rand -base64 32
+
+# Reverse proxy trust
+NEXTCLOUD_TRUSTED_PROXIES=172.22.0.0/16 172.19.0.0/16
+
+# File storage
+NEXTCLOUD_DATA=./data
+
+# Container connections
+POSTGRES_HOST=db
+REDIS_HOST=redis
+
+# Reverse proxy settings
+NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_DOMAIN}
+TRUSTED_PROXIES=${NEXTCLOUD_TRUSTED_PROXIES}
+OVERWRITEPROTOCOL=https
+OVERWRITEHOST=${NEXTCLOUD_DOMAIN}
